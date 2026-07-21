@@ -11,5 +11,9 @@
         "name": "شطرنج",
         "image": "images/chess.jpg",
         "link": "games/chess/index.html"
+    },{
+        "name": "توپ و پل",
+        "image": "images/top.jpg",
+        "link": "games/top/index.html"
     }
 ]
