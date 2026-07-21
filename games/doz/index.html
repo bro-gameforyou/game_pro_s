@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دوز</title>
+
+<style>
+body{
+    margin:0;
+    background:#222;
+    color:white;
+    font-family:tahoma;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    height:100vh;
+}
+
+h1{
+    margin:10px;
+}
+
+#board{
+    display:grid;
+    grid-template-columns:repeat(3,100px);
+    grid-template-rows:repeat(3,100px);
+    gap:5px;
+}
+
+.cell{
+    background:#333;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:60px;
+    cursor:pointer;
+    border-radius:10px;
+}
+
+.cell:hover{
+    background:#444;
+}
+
+button{
+    margin-top:20px;
+    padding:10px 20px;
+    font-size:18px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>بازی دوز</h1>
+
+<h2 id="status">نوبت: ❌</h2>
+
+<div id="board"></div>
+
+<button onclick="resetGame()">شروع دوباره</button>
+
+<script>
+
+const board=document.getElementById("board");
+const status=document.getElementById("status");
+
+let cells=["","","","","","","","",""];
+
+let current="❌";
+
+let gameOver=false;
+
+function draw(){
+
+board.innerHTML="";
+
+cells.forEach((value,index)=>{
+
+const cell=document.createElement("div");
+
+cell.className="cell";
+
+cell.innerText=value;
+
+cell.onclick=()=>play(index);
+
+board.appendChild(cell);
+
+});
+
+}
+
+function play(i){
+
+if(gameOver) return;
+
+if(cells[i]!="") return;
+
+cells[i]=current;
+
+check();
+
+current=current=="❌"?"⭕":"❌";
+
+if(!gameOver)
+
+status.innerText="نوبت: "+current;
+
+draw();
+
+}
+
+function check(){
+
+const win=[
+
+[0,1,2],
+[3,4,5],
+[6,7,8],
+
+[0,3,6],
+[1,4,7],
+[2,5,8],
+
+[0,4,8],
+[2,4,6]
+
+];
+
+for(let w of win){
+
+let[a,b,c]=w;
+
+if(
+
+cells[a]!=""&&
+
+cells[a]==cells[b]&&
+
+cells[a]==cells[c]
+
+){
+
+status.innerText=cells[a]+" برنده شد 🎉";
+
+gameOver=true;
+
+return;
+
+}
+
+}
+
+if(!cells.includes("")){
+
+status.innerText="مساوی 🤝";
+
+gameOver=true;
+
+}
+
+}
+
+function resetGame(){
+
+cells=["","","","","","","","",""];
+
+current="❌";
+
+gameOver=false;
+
+status.innerText="نوبت: ❌";
+
+draw();
+
+}
+
+draw();
+
+</script>
+
+</body>
+</html>

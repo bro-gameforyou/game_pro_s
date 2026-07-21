@@ -1,0 +1,15 @@
+[
+    {
+        "name": "دوز",
+        "image": "images/doz.jpg",
+        "link": "games/doz/index.html"
+    },{
+        "name": "ماینکرافت",
+        "image": "images/min.jpg",
+        "link": "games/min/dist/index.html"
+    },{
+        "name": "شطرنج",
+        "image": "images/chess.jpg",
+        "link": "games/chess/index.html"
+    }
+]
