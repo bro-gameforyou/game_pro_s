@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شطرنج حرفه‌ای</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .main-menu { width: 90%; max-width: 500px; padding: 30px; background: rgba(0,0,0,0.7); border-radius: 15px; border: 3px solid #00adb5; box-shadow: 0 0 25px rgba(0,173,181,0.5); text-align: center; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .menu-btn { padding: 15px 25px; background: linear-gradient(135deg, #00adb5 0%, #0097a7 100%); color: white; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; width: 100%; margin: 5px 0; }
+        .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,173,181,0.5); }
+        .level-btn { padding: 12px 20px; background: rgba(0,173,181,0.2); color: white; border: 2px solid #00adb5; border-radius: 8px; font-size: 1.1rem; cursor: pointer; width: 100%; margin: 5px 0; transition: all 0.3s ease; }
+        .level-btn:hover { background: rgba(0,173,181,0.4); }
+        .game-container { width: 100%; max-width: 1200px; display: none; }
+        .game-content { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-bottom: 30px; }
+        .chess-board { width: 560px; height: 560px; border: 15px solid #393e46; border-radius: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); overflow: hidden; }
+        .board-row { display: flex; height: 12.5%; }
+        .square { width: 12.5%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+        .light { background-color: #eeeeee; }
+        .dark { background-color: #00adb5; }
+        .piece { font-size: 40px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+        .white-piece { color: #fff; }
+        .black-piece { color: #222831; }
+        .game-info { flex: 1; min-width: 300px; background: rgba(0,0,0,0.4); border-radius: 15px; padding: 25px; }
+        .turn-indicator { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-size: 1.3rem; border: 2px solid; }
+        .game-btn { padding: 12px 20px; background: #00adb5; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
+        .game-btn:hover { background: #00969d; }
+        .selected { background-color: rgba(255,215,0,0.6) !important; }
+        .valid-move { background-color: rgba(144,238,144,0.5) !important; }
+        .capture-move { background-color: rgba(255,99,71,0.6) !important; }
+        @media (max-width: 600px) { .chess-board { width: 350px; height: 350px; } .piece { font-size: 25px; } }
+    </style>
+</head>
+<body>
+    <!-- منوی اصلی -->
+    <div class="main-menu" id="mainMenu">
+        <h1 style="color:#00adb5; font-size:2.8rem; margin-bottom:10px;">♔ شطرنج حرفه‌ای</h1>
+        
+        <div class="menu-section" style="margin-bottom:20px;">
+            <h2 style="color:#00adb5; margin-bottom:15px;">🎮 انتخاب نوع بازی</h2>
+            <button class="menu-btn" onclick="startTwoPlayerGame()">👥 بازی دو‌نفره</button>
+            <button class="menu-btn" onclick="showSinglePlayerLevels()">🤖 بازی با هوش مصنوعی</button>
+        </div>
+        
+        <div id="singlePlayerSection" style="display: none;">
+            <h2 style="color:#00adb5; margin-bottom:15px;">🎯 سطح هوش مصنوعی</h2>
+            <button class="level-btn" onclick="startSinglePlayerGame('beginner')">🔰 مبتدی</button>
+            <button class="level-btn" onclick="startSinglePlayerGame('intermediate')">⭐ متوسط</button>
+            <button class="level-btn" onclick="startSinglePlayerGame('advanced')">🌟🌟 پیشرفته</button>
+            <button class="level-btn" onclick="startSinglePlayerGame('expert')">🌟🌟🌟 حرفه‌ای</button>
+            <button class="level-btn" onclick="startSinglePlayerGame('master')">🏆 استاد</button>
+            <button class="menu-btn" onclick="hideSinglePlayerLevels()" style="margin-top:15px;">بازگشت</button>
+        </div>
+    </div>
+    
+    <!-- صفحه بازی -->
+    <div class="game-container" id="gameContainer">
+        <header style="text-align:center; margin-bottom:20px;">
+            <h1 style="color:#00adb5; font-size:2.5rem;">شطرنج ♔</h1>
+            <p id="gameModeText" style="color:#eee; font-size:1.2rem;">بازی دو‌نفره</p>
+        </header>
+        
+        <div class="game-content">
+            <div class="chess-board" id="chessBoard"></div>
+            
+            <div class="game-info">
+                <div class="turn-indicator white-turn" id="turnIndicator">نوبت: سفید ♔</div>
+                <div class="status" id="gameStatus" style="padding:15px; background:rgba(57,62,70,0.8); border-radius:10px; margin-bottom:20px; text-align:center; min-height:50px;">بازی شروع شد</div>
+                
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+                    <button class="game-btn" onclick="newGame()">🔄 بازی جدید</button>
+                    <button class="game-btn" onclick="undoMove()">↩️ حرکت قبلی</button>
+                    <button class="game-btn" onclick="backToMenu()">🏠 بازگشت</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== تنظیمات بازی =====
+        const gameState = {
+            board: [],
+            selectedPiece: null,
+            validMoves: [],
+            turn: 'white',
+            moveHistory: [],
+            gameOver: false,
+            gameMode: 'two-player',
+            aiLevel: 'intermediate',
+            isAITurn: false,
+            kingPosition: { white: { row: 7, col: 4 }, black: { row: 0, col: 4 } }
+        };
+
+        const pieceValues = { 'P': 100, 'N': 320, 'B': 330, 'R': 500, 'Q': 900, 'K': 20000 };
+        
+        const pieces = {
+            'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
+        };
+
+        // ===== توابع منو =====
+        function startTwoPlayerGame() {
+            gameState.gameMode = 'two-player';
+            document.getElementById('gameModeText').textContent = 'بازی دو‌نفره';
+            showGameScreen();
+        }
+
+        function showSinglePlayerLevels() {
+            document.getElementById('singlePlayerSection').style.display = 'block';
+        }
+
+        function hideSinglePlayerLevels() {
+            document.getElementById('singlePlayerSection').style.display = 'none';
+        }
+
+        function startSinglePlayerGame(level) {
+            gameState.gameMode = 'single-player';
+            gameState.aiLevel = level;
+            
+            const levelNames = {
+                'beginner': 'مبتدی',
+                'intermediate': 'متوسط',
+                'advanced': 'پیشرفته',
+                'expert': 'حرفه‌ای',
+                'master': 'استاد'
+            };
+            
+            document.getElementById('gameModeText').textContent = `بازی با هوش مصنوعی - ${levelNames[level]}`;
+            showGameScreen();
+        }
+
+        function showGameScreen() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            initializeBoard();
+        }
+
+        function backToMenu() {
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+        }
+
+        // ===== توابع بازی =====
+        function initializeBoard() {
+            const initialBoard = [
+                ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+                ['bP','bP','bP','bP','bP','bP','bP','bP'],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['wP','wP','wP','wP','wP','wP','wP','wP'],
+                ['wR','wN','wB','wQ','wK','wB','wN','wR']
+            ];
+            
+            gameState.board = initialBoard.map(row => [...row]);
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            gameState.turn = 'white';
+            gameState.moveHistory = [];
+            gameState.gameOver = false;
+            gameState.isAITurn = false;
+            
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const boardElement = document.getElementById('chessBoard');
+            boardElement.innerHTML = '';
+            
+            for (let row = 0; row < 8; row++) {
+                const rowElement = document.createElement('div');
+                rowElement.className = 'board-row';
+                
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    const isLight = (row + col) % 2 === 0;
+                    square.className = `square ${isLight ? 'light' : 'dark'}`;
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    
+                    if (gameState.selectedPiece && gameState.selectedPiece.row === row && gameState.selectedPiece.col === col) {
+                        square.classList.add('selected');
+                    }
+                    
+                    if (gameState.validMoves.some(move => move.row === row && move.col === col)) {
+                        const move = gameState.validMoves.find(m => m.row === row && m.col === col);
+                        square.classList.add(move.type === 'capture' ? 'capture-move' : 'valid-move');
+                    }
+                    
+                    const pieceCode = gameState.board[row][col];
+                    if (pieceCode) {
+                        const pieceElement = document.createElement('div');
+                        const color = pieceCode[0] === 'w' ? 'white' : 'black';
+                        const pieceType = pieceCode[1];
+                        pieceElement.className = `piece ${color}-piece`;
+                        pieceElement.textContent = pieces[pieceType] || '';
+                        square.appendChild(pieceElement);
+                    }
+                    
+                    square.onclick = () => handleSquareClick(row, col);
+                    rowElement.appendChild(square);
+                }
+                boardElement.appendChild(rowElement);
+            }
+            
+            updateTurnIndicator();
+        }
+
+        function handleSquareClick(row, col) {
+            if (gameState.gameOver || gameState.isAITurn) return;
+            
+            const clickedPiece = gameState.board[row][col];
+            
+            if (gameState.selectedPiece) {
+                const isValidMove = gameState.validMoves.some(move => move.row === row && move.col === col);
+                
+                if (isValidMove) {
+                    makeMove(gameState.selectedPiece.row, gameState.selectedPiece.col, row, col);
+                    return;
+                }
+                
+                gameState.selectedPiece = null;
+                gameState.validMoves = [];
+                renderBoard();
+                return;
+            }
+            
+            if (clickedPiece) {
+                const color = clickedPiece[0] === 'w' ? 'white' : 'black';
+                if (color !== gameState.turn) return;
+                
+                gameState.selectedPiece = { row, col };
+                gameState.validMoves = getValidMovesForPiece(row, col);
+                renderBoard();
+            }
+        }
+
+        function getValidMovesForPiece(row, col) {
+            const piece = gameState.board[row][col];
+            if (!piece) return [];
+            
+            const color = piece[0] === 'w' ? 'white' : 'black';
+            const basicMoves = getBasicMoves(row, col);
+            const validMoves = [];
+            
+            for (const move of basicMoves) {
+                const originalBoard = gameState.board.map(r => [...r]);
+                const originalKingPos = {...gameState.kingPosition[color]};
+                
+                gameState.board[move.row][move.col] = piece;
+                gameState.board[row][col] = '';
+                
+                if (piece[1] === 'K') {
+                    gameState.kingPosition[color] = { row: move.row, col: move.col };
+                }
+                
+                if (!isKingInCheck(color)) {
+                    validMoves.push(move);
+                }
+                
+                gameState.board = originalBoard.map(r => [...r]);
+                gameState.kingPosition[color] = originalKingPos;
+            }
+            
+            return validMoves;
+        }
+
+        function getBasicMoves(row, col) {
+            const pieceCode = gameState.board[row][col];
+            if (!pieceCode) return [];
+            
+            const color = pieceCode[0];
+            const pieceType = pieceCode[1];
+            const moves = [];
+            
+            const isValidSquare = (r, c, canCapture = true) => {
+                if (r < 0 || r > 7 || c < 0 || c > 7) return false;
+                const targetPiece = gameState.board[r][c];
+                if (!targetPiece) return true;
+                return targetPiece[0] !== color && canCapture;
+            };
+            
+            // پیاده
+            if (pieceType === 'P') {
+                const direction = color === 'w' ? -1 : 1;
+                const startRow = color === 'w' ? 6 : 1;
+                
+                if (isValidSquare(row + direction, col, false) && !gameState.board[row + direction][col]) {
+                    moves.push({ row: row + direction, col: col, type: 'move' });
+                    if (row === startRow && !gameState.board[row + 2 * direction][col]) {
+                        moves.push({ row: row + 2 * direction, col: col, type: 'move' });
+                    }
+                }
+                
+                [[direction, -1], [direction, 1]].forEach(([dr, dc]) => {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+                        if (gameState.board[newRow][newCol] && gameState.board[newRow][newCol][0] !== color) {
+                            moves.push({ row: newRow, col: newCol, type: 'capture' });
+                        }
+                    }
+                });
+            }
+            
+            // رخ
+            if (pieceType === 'R') {
+                [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr, dc]) => {
+                    let r = row + dr, c = col + dc;
+                    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+                        if (!gameState.board[r][c]) {
+                            moves.push({ row: r, col: c, type: 'move' });
+                        } else {
+                            if (gameState.board[r][c][0] !== color) moves.push({ row: r, col: c, type: 'capture' });
+                            break;
+                        }
+                        r += dr; c += dc;
+                    }
+                });
+            }
+            
+            // فیل
+            if (pieceType === 'B') {
+                [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr, dc]) => {
+                    let r = row + dr, c = col + dc;
+                    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+                        if (!gameState.board[r][c]) {
+                            moves.push({ row: r, col: c, type: 'move' });
+                        } else {
+                            if (gameState.board[r][c][0] !== color) moves.push({ row: r, col: c, type: 'capture' });
+                            break;
+                        }
+                        r += dr; c += dc;
+                    }
+                });
+            }
+            
+            // وزیر
+            if (pieceType === 'Q') {
+                [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr, dc]) => {
+                    let r = row + dr, c = col + dc;
+                    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+                        if (!gameState.board[r][c]) {
+                            moves.push({ row: r, col: c, type: 'move' });
+                        } else {
+                            if (gameState.board[r][c][0] !== color) moves.push({ row: r, col: c, type: 'capture' });
+                            break;
+                        }
+                        r += dr; c += dc;
+                    }
+                });
+            }
+            
+            // اسب
+            if (pieceType === 'N') {
+                [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr, dc]) => {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+                        if (!gameState.board[newRow][newCol] || gameState.board[newRow][newCol][0] !== color) {
+                            moves.push({ row: newRow, col: newCol, type: gameState.board[newRow][newCol] ? 'capture' : 'move' });
+                        }
+                    }
+                });
+            }
+            
+            // شاه
+            if (pieceType === 'K') {
+                [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr, dc]) => {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+                        if (!gameState.board[newRow][newCol] || gameState.board[newRow][newCol][0] !== color) {
+                            moves.push({ row: newRow, col: newCol, type: gameState.board[newRow][newCol] ? 'capture' : 'move' });
+                        }
+                    }
+                });
+            }
+            
+            return moves;
+        }
+
+        function isKingInCheck(color) {
+            const kingPos = gameState.kingPosition[color];
+            const opponentColor = color === 'white' ? 'black' : 'white';
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece[0] === (opponentColor === 'white' ? 'w' : 'b')) {
+                        const moves = getBasicMoves(row, col);
+                        if (moves.some(move => move.row === kingPos.row && move.col === kingPos.col)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function makeMove(fromRow, fromCol, toRow, toCol) {
+            const piece = gameState.board[fromRow][fromCol];
+            const capturedPiece = gameState.board[toRow][toCol];
+            
+            gameState.moveHistory.push({
+                piece, from: { row: fromRow, col: fromCol },
+                to: { row: toRow, col: toCol }, captured: capturedPiece
+            });
+            
+            gameState.board[toRow][toCol] = piece;
+            gameState.board[fromRow][fromCol] = '';
+            
+            if (piece[1] === 'K') {
+                const color = piece[0] === 'w' ? 'white' : 'black';
+                gameState.kingPosition[color] = { row: toRow, col: toCol };
+            }
+            
+            // تبدیل پیاده
+            if (piece[1] === 'P') {
+                if ((piece[0] === 'w' && toRow === 0) || (piece[0] === 'b' && toRow === 7)) {
+                    gameState.board[toRow][toCol] = piece[0] + 'Q';
+                }
+            }
+            
+            // همیشه صفحه رو به روز کن
+            renderBoard();
+            
+            gameState.turn = gameState.turn === 'white' ? 'black' : 'white';
+            checkGameStatus();
+            
+            if (gameState.gameMode === 'single-player' && gameState.turn === 'black' && !gameState.gameOver) {
+                gameState.isAITurn = true;
+                document.getElementById('gameStatus').innerHTML = '🤖 هوش مصنوعی در حال فکر کردن...';
+                setTimeout(makeAIMove, 500);
+            }
+        }
+
+        function checkGameStatus() {
+            if (isCheckmate(gameState.turn)) {
+                gameState.gameOver = true;
+                const winner = gameState.turn === 'white' ? 'سیاه' : 'سفید';
+                document.getElementById('gameStatus').innerHTML = `🔥 مات! ${winner} برنده شد!`;
+            } else if (isStalemate(gameState.turn)) {
+                gameState.gameOver = true;
+                document.getElementById('gameStatus').innerHTML = `🤝 پات! مساوی شد!`;
+            } else if (isKingInCheck(gameState.turn)) {
+                document.getElementById('gameStatus').innerHTML = `⚠️ کیش!`;
+            } else {
+                document.getElementById('gameStatus').textContent = 'بازی در جریان است';
+            }
+        }
+
+        function isCheckmate(color) {
+            if (!isKingInCheck(color)) return false;
+            return !hasLegalMoves(color);
+        }
+
+        function isStalemate(color) {
+            if (isKingInCheck(color)) return false;
+            return !hasLegalMoves(color);
+        }
+
+        function hasLegalMoves(color) {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece[0] === (color === 'white' ? 'w' : 'b')) {
+                        if (getValidMovesForPiece(row, col).length > 0) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // ===== هوش مصنوعی =====
+        function makeAIMove() {
+            let bestMove = null;
+            let bestScore = -Infinity;
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece[0] === 'b') {
+                        const moves = getValidMovesForPiece(row, col);
+                        for (const move of moves) {
+                            const score = evaluateMove(row, col, move.row, move.col);
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestMove = { from: { row, col }, to: { row: move.row, col: move.col } };
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (bestMove) {
+                makeMove(bestMove.from.row, bestMove.from.col, bestMove.to.row, bestMove.to.col);
+            }
+            gameState.isAITurn = false;
+        }
+
+        function evaluateMove(fromRow, fromCol, toRow, toCol) {
+            let score = 0;
+            const piece = gameState.board[fromRow][fromCol];
+            const captured = gameState.board[toRow][toCol];
+            
+            // امتیاز گرفتن مهره
+            if (captured) {
+                score += pieceValues[captured[1]] || 0;
+            }
+            
+            // امتیاز حرکت به مرکز
+            if (toRow >= 2 && toRow <= 5 && toCol >= 2 && toCol <= 5) {
+                score += 10;
+            }
+            
+            // امتیاز حرکت مهره‌های سبک
+            if (piece && (piece[1] === 'N' || piece[1] === 'B')) {
+                score += 5;
+            }
+            
+            return score;
+        }
+
+        function newGame() {
+            initializeBoard();
+        }
+
+        function undoMove() {
+            if (gameState.moveHistory.length === 0) return;
+            
+            const lastMove = gameState.moveHistory.pop();
+            gameState.board[lastMove.from.row][lastMove.from.col] = lastMove.piece;
+            gameState.board[lastMove.to.row][lastMove.to.col] = lastMove.captured || '';
+            
+            if (lastMove.piece[1] === 'K') {
+                const color = lastMove.piece[0] === 'w' ? 'white' : 'black';
+                gameState.kingPosition[color] = { row: lastMove.from.row, col: lastMove.from.col };
+            }
+            
+            gameState.turn = gameState.turn === 'white' ? 'black' : 'white';
+            gameState.gameOver = false;
+            renderBoard();
+        }
+
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            indicator.textContent = gameState.turn === 'white' ? 'نوبت: سفید ♔' : 'نوبت: سیاه ♚';
+            indicator.className = `turn-indicator ${gameState.turn}-turn`;
+            indicator.style.borderColor = gameState.turn === 'white' ? '#fff' : '#222';
+        }
+    </script>
+</body>
+</html>
