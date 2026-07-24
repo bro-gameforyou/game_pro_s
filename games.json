@@ -15,5 +15,9 @@
         "name": "توپ و پل",
         "image": "images/top.jpg",
         "link": "games/top/index.html"
+    },{
+        "name": "HexGL",
+        "image": "images/HexGL.jpg",
+        "link": "games/HexGL/index.html"
     }
 ]
