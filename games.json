@@ -23,5 +23,9 @@
         "name": "ماینکرافت",
         "image": "images/BrowserQuest-master.jpg",
         "link": "games/BrowserQuest-master/client/index.html"
+    },{
+        "name": "ماشین",
+        "image": "images/BrowserQuest-master.jpg",
+        "link": "games/car/index.html"
     }
 ]
