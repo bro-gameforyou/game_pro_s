@@ -20,10 +20,6 @@
         "image": "images/HexGL.jpg",
         "link": "games/HexGL/index.html"
     },{
-        "name": "ماینکرافت",
-        "image": "images/BrowserQuest-master.jpg",
-        "link": "games/BrowserQuest-master/client/index.html"
-    },{
         "name": "ماشین",
         "image": "images/car.jpg",
         "link": "games/car/index.html"
