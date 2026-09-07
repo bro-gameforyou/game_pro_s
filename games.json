@@ -27,5 +27,9 @@
         "name": "2048",
         "image": "images/2048.jpg",
         "link": "games/2048/2048-master/index.html"
+    },{
+        "name": "بازی مار",
+        "image": "images/snake.jpg",
+        "link": "games/sanke/index.html"
     }
 ]
