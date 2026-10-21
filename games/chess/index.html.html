@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شطرنج کامل | دو نفره و بازی با بات</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:Tahoma,Arial,sans-serif;
+    background:linear-gradient(135deg,#101827,#1d2940); color:#fff;
+    display:flex; justify-content:center; padding:22px;
+  }
+  .app{width:min(1100px,100%); display:grid; grid-template-columns:minmax(300px,720px) 320px; gap:22px; align-items:start}
+  .panel,.side{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+    border-radius:20px; box-shadow:0 15px 45px rgba(0,0,0,.28); backdrop-filter:blur(12px)
+  }
+  .panel{padding:18px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+  h1{font-size:24px;margin:0}
+  .status{font-size:14px;opacity:.85}
+  #board{
+    width:min(78vw,680px); height:min(78vw,680px); margin:auto;
+    display:grid; grid-template-columns:repeat(8,minmax(0,1fr));
+    grid-template-rows:repeat(8,minmax(0,1fr));
+    border-radius:12px; overflow:hidden; box-shadow:0 12px 35px rgba(0,0,0,.4);
+    direction:ltr; contain:layout paint;
+  }
+  .sq{
+    position:relative; width:100%; height:100%; min-width:0; min-height:0;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; user-select:none; overflow:hidden;
+  }
+  .light{background:#f0d9b5}.dark{background:#b58863}
+  .sq.selected{box-shadow:inset 0 0 0 5px #ffd54a}
+  .sq.legal::after{
+    content:""; position:absolute; width:20%; height:20%; border-radius:50%;
+    background:rgba(20,20,20,.28); z-index:1; pointer-events:none;
+  }
+  .sq.capture::after{
+    content:""; position:absolute; width:76%; height:76%; border-radius:50%;
+    border:5px solid rgba(200,30,30,.55); z-index:1; pointer-events:none;
+  }
+  .piece{
+    position:relative; z-index:2; display:flex; align-items:center; justify-content:center;
+    width:82%; height:82%; line-height:1; font-family:"Times New Roman",serif;
+    font-size:clamp(28px,6vw,58px); pointer-events:none;
+    transform:translateZ(0); contain:layout paint;
+  }
+  .piece.white-piece{
+    color:#fff; -webkit-text-stroke:1.5px #111;
+    text-shadow:0 2px 2px rgba(0,0,0,.55);
+  }
+  .piece.black-piece{
+    color:#111; -webkit-text-stroke:1px #000;
+    text-shadow:0 2px 2px rgba(255,255,255,.18);
+  }
+  .last{background-image:linear-gradient(rgba(255,215,0,.28),rgba(255,215,0,.28))}
+  .check{background-image:linear-gradient(rgba(220,40,40,.5),rgba(220,40,40,.5))}
+  .coords{position:absolute;font-size:9px;font-weight:bold;opacity:.7;z-index:3}
+  .rank{right:3px;top:3px}.file{left:3px;bottom:3px}
+  .side{padding:18px}
+  .section{margin-bottom:18px}
+  label{display:block;font-size:13px;margin-bottom:7px;opacity:.85}
+  select,button{
+    width:100%;border:0;border-radius:12px;padding:11px 12px;font:inherit;
+    background:#26354e;color:#fff;cursor:pointer
+  }
+  button:hover,select:hover{background:#324663}
+  .buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .moves{height:300px;overflow:auto;background:rgba(0,0,0,.16);border-radius:12px;padding:10px;direction:ltr}
+  .move{display:flex;justify-content:space-between;padding:5px 7px;border-radius:7px}
+  .move:nth-child(even){background:rgba(255,255,255,.05)}
+  .hint{font-size:12px;line-height:1.8;opacity:.7}
+  .turn{padding:10px;border-radius:12px;background:rgba(255,255,255,.08);margin-bottom:12px}
+  @media(max-width:850px){
+  .app{grid-template-columns:1fr}
+  .side{width:min(680px,100%);margin:auto}
+  #board{width:min(94vw,680px);height:min(94vw,680px)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="panel">
+    <div class="top">
+      <div>
+        <h1>♟ شطرنج</h1>
+        <div class="status" id="status">در حال آماده‌سازی...</div>
+      </div>
+      <div id="turnBadge">نوبت سفید</div>
+    </div>
+    <div id="board"></div>
+  </main>
+
+  <aside class="side">
+    <div class="section">
+      <label>حالت بازی</label>
+      <select id="mode">
+        <option value="ai">یک‌نفره با بات</option>
+        <option value="two">دو نفره</option>
+      </select>
+    </div>
+
+    <div class="section" id="colorSection">
+      <label>رنگ شما</label>
+      <select id="humanColor">
+        <option value="w">سفید</option>
+        <option value="b">سیاه</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <label>سطح بات</label>
+      <select id="depth">
+        <option value="1">آسان</option>
+        <option value="2" selected>متوسط</option>
+        <option value="3">سخت</option>
+      </select>
+    </div>
+
+    <div class="section buttons">
+      <button id="newGame">بازی جدید</button>
+      <button id="undo">برگشت حرکت</button>
+      <button id="flip">چرخاندن صفحه</button>
+      <button id="copyFen">کپی FEN</button>
+    </div>
+
+    <div class="section">
+      <label>حرکت‌ها</label>
+      <div class="moves" id="moves"></div>
+    </div>
+
+    <div class="hint">
+      برای حرکت، روی مهره کلیک و سپس خانه مقصد را انتخاب کنید.
+      در حالت بات، بات به‌صورت خودکار حرکت می‌کند. ارتقای سرباز به وزیر/رخ/فیل/اسب پشتیبانی می‌شود.
+    </div>
+  </aside>
+</div>
+
+<script>
+const PIECES = {
+  wp:"♙", wr:"♖", wn:"♘", wb:"♗", wq:"♕", wk:"♔",
+  bp:"♟", br:"♜", bn:"♞", bb:"♝", bq:"♛", bk:"♚"
+};
+let game = new Chess();
+let selected = null, flipped = false, lastMove = null, thinking = false;
+const boardEl=document.getElementById("board");
+const statusEl=document.getElementById("status");
+const movesEl=document.getElementById("moves");
+const modeEl=document.getElementById("mode");
+const colorEl=document.getElementById("humanColor");
+const depthEl=document.getElementById("depth");
+
+function render(){
+  boardEl.innerHTML="";
+  const files = flipped ? ["h","g","f","e","d","c","b","a"] : ["a","b","c","d","e","f","g","h"];
+  const ranks = flipped ? [1,2,3,4,5,6,7,8] : [8,7,6,5,4,3,2,1];
+  const selectedMoves = selected ? game.moves({square:selected, verbose:true}) : [];
+  for(const rank of ranks) for(const file of files){
+    const sq=file+rank, piece=game.get(sq);
+    const el=document.createElement("div");
+    const fileIndex="abcdefgh".indexOf(file), rankIndex=rank;
+    el.className="sq "+(((fileIndex+rank)%2===0)?"light":"dark");
+    if(lastMove && (sq===lastMove.from || sq===lastMove.to)) el.classList.add("last");
+    if(selected===sq) el.classList.add("selected");
+    const mv=selectedMoves.find(x=>x.to===sq);
+    if(mv) el.classList.add(mv.captured?"capture":"legal");
+    if(piece){
+      const p=document.createElement("span");
+      p.className="piece "+(piece.color==="w" ? "white-piece" : "black-piece");
+      p.textContent=PIECES[piece.color+piece.type]; el.appendChild(p);
+    }
+    if(file==="a"){const c=document.createElement("span");c.className="coords rank";c.textContent=rank;el.appendChild(c)}
+    if(rank===(flipped?8:1)){const c=document.createElement("span");c.className="coords file";c.textContent=file;el.appendChild(c)}
+    el.onclick=()=>clickSquare(sq);
+    boardEl.appendChild(el);
+  }
+  updateInfo();
+}
+
+function clickSquare(sq){
+  if(thinking || game.game_over()) return;
+  if(modeEl.value==="ai"){
+    const human=colorEl.value;
+    if(game.turn()!==human) return;
+  }
+  const p=game.get(sq);
+  if(selected){
+    const moves=game.moves({square:selected,verbose:true}).filter(m=>m.to===sq);
+    if(moves.length){
+      let promotion=moves[0].promotion;
+      if(promotion){
+        promotion=prompt("ارتقا: q=وزیر، r=رخ، b=فیل، n=اسب","q")||"q";
+        if(!"qrbn".includes(promotion)) promotion="q";
+      }
+      const move=game.move({from:selected,to:sq,promotion:promotion||undefined});
+      if(move){lastMove={from:move.from,to:move.to}; selected=null; render(); maybeAI(); return;}
+    }
+  }
+  if(p && ((modeEl.value==="two") || p.color===game.turn())) selected=sq;
+  else selected=null;
+  render();
+}
+
+function updateInfo(){
+  const side=game.turn()==="w"?"سفید":"سیاه";
+  document.getElementById("turnBadge").textContent="نوبت "+side;
+  if(game.in_checkmate()) statusEl.textContent="کیش‌ومات! "+(side==="سفید"?"سیاه":"سفید")+" برنده شد.";
+  else if(game.in_draw()) statusEl.textContent="مساوی.";
+  else if(game.in_check()) statusEl.textContent="کیش! نوبت "+side;
+  else statusEl.textContent="نوبت "+side;
+  movesEl.innerHTML="";
+  const hist=game.history();
+  for(let i=0;i<hist.length;i+=2){
+    const row=document.createElement("div"); row.className="move";
+    row.innerHTML=`<span>${Math.floor(i/2)+1}.</span><span>${hist[i]||""} ${hist[i+1]||""}</span>`;
+    movesEl.appendChild(row);
+  }
+  movesEl.scrollTop=movesEl.scrollHeight;
+}
+
+function maybeAI(){
+  if(modeEl.value!=="ai" || game.game_over()) return;
+  const human=colorEl.value;
+  if(game.turn()===human) return;
+  thinking=true; statusEl.textContent="بات در حال فکر کردن...";
+  setTimeout(()=>{
+    const best=findBestMove(game,Number(depthEl.value));
+    if(best){const m=game.move(best);lastMove={from:m.from,to:m.to};}
+    thinking=false; selected=null; render();
+  },180);
+}
+
+function findBestMove(position, depth){
+  const maximizing=position.turn()==="w";
+  let best=null,bestScore=maximizing?-Infinity:Infinity;
+  const moves=position.moves({verbose:true});
+  // کمی تصادفی‌سازی بین حرکت‌های هم‌ارزش
+  for(const m of moves){
+    position.move(m);
+    const score=minimax(position,depth-1,-Infinity,Infinity);
+    position.undo();
+    if((maximizing&&score>bestScore)||(!maximizing&&score<bestScore)){
+      bestScore=score; best=m;
+    }
+  }
+  return best;
+}
+
+function minimax(pos,depth,alpha,beta){
+  if(depth===0 || pos.game_over()) return evaluate(pos);
+  const max=pos.turn()==="w";
+  const moves=pos.moves({verbose:true});
+  if(max){
+    let value=-Infinity;
+    for(const m of moves){pos.move(m);value=Math.max(value,minimax(pos,depth-1,alpha,beta));pos.undo();alpha=Math.max(alpha,value);if(alpha>=beta)break}
+    return value;
+  }else{
+    let value=Infinity;
+    for(const m of moves){pos.move(m);value=Math.min(value,minimax(pos,depth-1,alpha,beta));pos.undo();beta=Math.min(beta,value);if(alpha>=beta)break}
+    return value;
+  }
+}
+
+function evaluate(pos){
+  if(pos.in_checkmate()) return pos.turn()==="w" ? -999999 : 999999;
+  if(pos.in_draw()) return 0;
+  const values={p:100,n:320,b:330,r:500,q:900,k:20000};
+  let score=0;
+  for(const row of pos.board()) for(const p of row) if(p) score+=(p.color==="w"?1:-1)*values[p.type];
+  // پاداش کوچک برای تحرک
+  const mobility=pos.moves().length;
+  score+=(pos.turn()==="w"?1:-1)*mobility*2;
+  return score;
+}
+
+function reset(){
+  game=new Chess(); selected=null; lastMove=null; thinking=false; render(); maybeAI();
+}
+modeEl.onchange=()=>{colorEl.parentElement.style.display=modeEl.value==="ai"?"block":"none";reset()};
+colorEl.onchange=reset;
+depthEl.onchange=()=>{if(modeEl.value==="ai" && game.turn()!==colorEl.value) maybeAI()};
+document.getElementById("newGame").onclick=reset;
+document.getElementById("flip").onclick=()=>{flipped=!flipped;render()};
+document.getElementById("undo").onclick=()=>{
+  if(thinking) return;
+  if(modeEl.value==="ai"){game.undo();game.undo();}else game.undo();
+  if(game.history().length===0) lastMove=null;
+  render();
+};
+document.getElementById("copyFen").onclick=async()=>{
+  try{await navigator.clipboard.writeText(game.fen());statusEl.textContent="FEN کپی شد."}catch(e){prompt("FEN:",game.fen())}
+};
+colorEl.parentElement.style.display="block";
+render();
+</script>
+</body>
+</html>
