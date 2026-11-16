@@ -1,34 +1,50 @@
+
 [
     {
         "name": "دوز",
+        "category": "فکری",
         "image": "images/doz.jpg",
         "link": "games/doz/index.html"
-    },{
-        "name": "(مخصوصpc)ماینکرافت",
+    },
+    {
+        "name": "ماینکرافت (مخصوص PC)",
+        "category": "سرگرمی",
         "image": "images/min.jpg",
         "link": "games/min/dist/index.html"
-    },{
+    },
+    {
         "name": "شطرنج",
+        "category": "فکری",
         "image": "images/chess.jpg",
         "link": "games/chess/index.html.html"
-    },{
+    },
+    {
         "name": "توپ و پل",
+        "category": "سرگرمی",
         "image": "images/top.jpg",
         "link": "games/top/index.html"
-    },{
+    },
+    {
         "name": "HexGL",
+        "category": "ماشینی",
         "image": "images/HexGL.jpg",
         "link": "games/HexGL/index.html"
-    },{
+    },
+    {
         "name": "ماشین",
+        "category": "ماشینی",
         "image": "images/car.jpg",
         "link": "games/car/index.html"
-    },{
+    },
+    {
         "name": "2048",
+        "category": "فکری",
         "image": "images/2048.jpg",
         "link": "games/2048/2048-master/index.html"
-    },{
+    },
+    {
         "name": "بازی مار",
+        "category": "سرگرمی",
         "image": "images/snake.jpg",
         "link": "games/snake/index.html"
     }
