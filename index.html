@@ -1,44 +1,121 @@
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Pro S</title>
-
+    <meta name="theme-color" content="#101225">
+    <title>Game Pro S | دنیای بازی‌ها</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
+<div class="background-glow"></div>
+
 <header class="header">
+    <a href="#" class="logo">
+        <span class="logo-icon">G</span>
+        <span>GAME <b>PRO</b> <em>S</em></span>
+    </a>
 
-    <h1>🎮 Game Pro S</h1>
-
-    <input
-        id="search"
-        type="text"
-        placeholder="جستجوی بازی..."
-    >
-
+    <div class="header-actions">
+        <button id="themeBtn" class="icon-btn" title="تغییر تم">☀️</button>
+        <button id="randomBtn" class="random-btn">🎲 بازی شانسی</button>
+    </div>
 </header>
 
-<main>
+<main class="container">
 
-    <div id="games" class="games"></div>
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-label">✦ WELCOME TO GAME PRO S</span>
+            <h1>دنیای بازی‌ها<br><span>از اینجا شروع می‌شه!</span></h1>
+            <p>بازی مورد علاقه‌ات رو پیدا کن، انتخاب کن و وارد دنیای هیجان شو!</p>
+            <a href="#library" class="hero-button">شروع بازی <span>←</span></a>
+
+            <div class="hero-stats">
+                <div><strong id="heroCount">۰</strong><small>بازی جذاب</small></div>
+                <div><strong>∞</strong><small>لحظه سرگرمی</small></div>
+                <div><strong>100%</strong><small>هیجان</small></div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="circle circle-one"></div>
+            <div class="circle circle-two"></div>
+            <div class="floating-star star-one">✦</div>
+            <div class="floating-star star-two">✧</div>
+            <div class="controller">🎮</div>
+            <div class="floating-label label-one">LEVEL UP!</div>
+            <div class="floating-label label-two">LET'S PLAY</div>
+        </div>
+    </section>
+
+    <section id="library" class="library">
+
+        <div class="section-title">
+            <div>
+                <span class="small-title">GAME COLLECTION</span>
+                <h2>کتابخانه بازی‌ها 🎮</h2>
+                <p>بازی بعدی خودت رو انتخاب کن!</p>
+            </div>
+            <div class="total-badge" id="totalCount">۰ بازی</div>
+        </div>
+
+        <div class="toolbar">
+            <div class="search-box">
+                <span>⌕</span>
+                <input id="search" type="search" placeholder="اسم بازی رو جستجو کن...">
+                <kbd>/</kbd>
+            </div>
+
+            <select id="sortSelect" class="sort-select">
+                <option value="default">ترتیب پیش‌فرض</option>
+                <option value="az">نام: الف تا ی</option>
+                <option value="za">نام: ی تا الف</option>
+            </select>
+        </div>
+
+        <div class="filters" id="filters">
+            <button class="filter active" data-category="all">همه بازی‌ها</button>
+            <button class="filter" data-category="فکری">🧠 فکری</button>
+            <button class="filter" data-category="ماشینی">🏎️ ماشینی</button>
+            <button class="filter" data-category="سرگرمی">🎯 سرگرمی</button>
+            <button class="filter" data-category="موردعلاقه">❤️ موردعلاقه‌ها</button>
+        </div>
+
+        <div class="results-line">
+            <span id="resultText">در حال بارگذاری بازی‌ها...</span>
+            <span class="online-status"><i></i> آماده بازی</span>
+        </div>
+
+        <div id="games" class="games">
+            <div class="loading">در حال آماده‌سازی بازی‌ها...</div>
+        </div>
+
+    </section>
+
+    <section class="bottom-banner">
+        <div>
+            <span>✨ GAME PRO S</span>
+            <h2>آماده‌ای رکورد جدید بزنی؟</h2>
+            <p>بازی مورد علاقه‌ات رو انتخاب کن و شروع کن!</p>
+        </div>
+        <div class="banner-icon">🏆</div>
+    </section>
 
 </main>
 
-<footer>
-
-    <p>© Game Pro S</p>
-
+<footer class="footer">
+    <a href="#" class="logo footer-logo">
+        GAME <b>PRO</b> <em>S</em>
+    </a>
+    <p>ساخته‌شده برای لحظه‌های شاد و سرگرمی بیشتر ❤️</p>
+    <span>© <span id="year"></span> Game Pro S</span>
 </footer>
 
+<div id="toast" class="toast"></div>
+
 <script src="script.js"></script>
-
-    <script src="https://cdn.counter.dev/script.js" data-id="2492f401-638d-4915-8647-443e0d0f07fa" data-utcoffset="4"></script>
-
 </body>
-
 </html>
